@@ -18,3 +18,5 @@ COPY . .
 
 # Default configuration to run headless in a Docker container
 ENV HEADLESS=true
+
+CMD ["node", "index.js"]
