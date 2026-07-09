@@ -1,6 +1,6 @@
 # ANSES CUIL Form Automator
 
-This Playwright script automates filling out the ANSES CUIL query form (at https://servicioswww.anses.gob.ar/C2-ConstaCUIL), navigates to the result page, checks if the query succeeded by searching for the "DESCARGAR CONSTANCIA" button, takes a screenshot of the final page, and notifies a Discord channel via a webhook with the outcome and screenshot.
+This Playwright script automates filling out the ANSES CUIL query form (at https://servicioswww.anses.gob.ar/C2-ConstaCUIL), navigates to the result page, checks if the query succeeded by searching for the "DESCARGAR CONSTANCIA" button, and notifies a Discord channel via a webhook with the outcome.
 
 ## Prerequisites
 
@@ -61,9 +61,8 @@ docker run --env-file .env cuil-check
 ### Script Behavior
 1. **Validation**: Checks if all necessary environment variables are set.
 2. **Navigation**: Launches a Chromium instance and navigates to the ANSES CUIL form page.
-3. **Offline Check**: Scans for the message "El servicio no está disponible momentáneamente". If the site is offline, it immediately sends a Discord warning notification and exits cleanly (without taking a screenshot).
+3. **Offline Check**: Scans for the message "El servicio no está disponible momentáneamente". If the site is offline, it immediately sends a Discord warning notification and exits cleanly.
 4. **Filling Form**: Fills out the document type, number, name, surname, sex, and date of birth according to the environment variables.
 5. **Submission**: Clicks **CONSULTAR** and waits for navigation.
 6. **Success Verification**: Waits up to 30 seconds for the button `"DESCARGAR CONSTANCIA"` to appear.
-7. **Screenshot**: Saves a full-page screenshot to `screenshot.png` (only when the form is submitted and processed).
-8. **Discord Webhook**: Sends a rich text message containing the status and details, attaching `screenshot.png` if the form-filling run occurred.
+7. **Discord Webhook**: Sends a rich text message containing the status and details.

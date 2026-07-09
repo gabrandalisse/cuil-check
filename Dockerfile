@@ -19,4 +19,5 @@ COPY . .
 # Default configuration to run headless in a Docker container
 ENV HEADLESS=true
 
-CMD ["node", "index.js"]
+# Keep the container running in the background indefinitely so that cron jobs can execute the script inside it
+CMD ["sleep", "infinity"]

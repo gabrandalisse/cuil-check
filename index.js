@@ -1,7 +1,5 @@
 require('dotenv').config();
 const { chromium } = require('playwright');
-const fs = require('fs');
-const path = require('path');
 
 // Configuration from environment variables
 const TIPO_DOCUMENTO = process.env.TIPO_DOCUMENTO || 'DU';
@@ -12,19 +10,11 @@ const SEXO = process.env.SEXO; // F, M, or X
 const FECHA_NACIMIENTO = process.env.FECHA_NACIMIENTO; // Format: YYYY-MM-DD
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 const HEADLESS = process.env.HEADLESS !== 'false';
-const SCREENSHOT_PATH = path.join(__dirname, 'screenshot.png');
 
-async function sendDiscordNotification(webhookUrl, message, screenshotPath = null) {
+async function sendDiscordNotification(webhookUrl, message) {
   try {
     const formData = new FormData();
     formData.append('payload_json', JSON.stringify({ content: message }));
-
-    if (screenshotPath && fs.existsSync(screenshotPath)) {
-      const fileBuffer = fs.readFileSync(screenshotPath);
-      const blob = new Blob([fileBuffer], { type: 'image/png' });
-      formData.append('file', blob, 'screenshot.png');
-      console.log(`Attached screenshot: ${screenshotPath}`);
-    }
 
     const response = await fetch(webhookUrl, {
       method: 'POST',
@@ -145,7 +135,6 @@ async function run() {
     // Fill FechaNacimiento (expects YYYY-MM-DD)
     await page.fill('#FechaNacimiento', FECHA_NACIMIENTO);
 
-    // Take screenshot of the filled form for debugging
     console.log('Submitting the form...');
     
     // Click button "Consultar"
@@ -167,28 +156,10 @@ async function run() {
       console.log('Button "DESCARGAR CONSTANCIA" not found within the timeout.');
       errorMsg = 'Timeout waiting for DESCARGAR CONSTANCIA button. The site might be showing an error, a security challenge, or the data entered is invalid.';
     }
-
-    // Take screenshot of the final page
-    await page.screenshot({ path: SCREENSHOT_PATH, fullPage: true });
-    console.log(`Saved screenshot to ${SCREENSHOT_PATH}`);
-
   } catch (error) {
     console.error('An error occurred during execution:', error);
     success = false;
     errorMsg = error.message;
-
-    // Try to take screenshot if page and browser are open
-    if (browser) {
-      try {
-        const pages = browser.contexts()[0]?.pages();
-        if (pages && pages.length > 0) {
-          await pages[0].screenshot({ path: SCREENSHOT_PATH, fullPage: true });
-          console.log(`Saved error screenshot to ${SCREENSHOT_PATH}`);
-        }
-      } catch (screenshotError) {
-        console.error('Could not take error screenshot:', screenshotError.message);
-      }
-    }
   } finally {
     if (browser) {
       await browser.close();
@@ -212,7 +183,7 @@ async function run() {
   }
 
   console.log('Sending message to Discord Webhook...');
-  await sendDiscordNotification(DISCORD_WEBHOOK_URL, discordMessage, SCREENSHOT_PATH);
+  await sendDiscordNotification(DISCORD_WEBHOOK_URL, discordMessage);
   
   // Exit with correct status code
   process.exit(success ? 0 : 1);
